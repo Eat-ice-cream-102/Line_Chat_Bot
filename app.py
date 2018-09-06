@@ -13,7 +13,7 @@ import json
 
 app = Flask(__name__)
 
-secretFileContentJson=json.load(open("/home/mollie/PycharmProjects/LineChatBot/line_secret_key", 'r'))
+secretFileContentJson=json.load(open("./line_secret_key", 'r'))
 CHANNEL_ACCESS_TOKEN = secretFileContentJson.get("Channel_access_token")
 CHANNEL_SECRET = secretFileContentJson.get("Channel_secret")
 
