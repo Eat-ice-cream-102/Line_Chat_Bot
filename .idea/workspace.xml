@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="d7d7add7-d8b1-4794-9661-af9a8d1a9104" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FUSProjectUsageTrigger">
+    <session id="375839037">
+      <usages-collector id="statistics.lifecycle.project">
+        <counts>
+          <entry key="project.closed" value="2" />
+          <entry key="project.open.time.2" value="1" />
+          <entry key="project.open.time.26" value="1" />
+          <entry key="project.open.time.3" value="1" />
+          <entry key="project.open.time.5" value="1" />
+          <entry key="project.opened" value="4" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.open">
+        <counts>
+          <entry key="py" value="9" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.open">
+        <counts>
+          <entry key="Python" value="9" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.edit">
+        <counts>
+          <entry key="Python Console" value="4" />
+          <entry key="dummy" value="5" />
+          <entry key="py" value="591" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.edit">
+        <counts>
+          <entry key="PLAIN_TEXT" value="5" />
+          <entry key="Python" value="595" />
+        </counts>
+      </usages-collector>
+    </session>
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="442">
+              <caret line="110" column="15" lean-forward="true" selection-start-line="110" selection-start-column="15" selection-end-line="110" selection-end-column="15" />
+              <folding>
+                <element signature="n#!!doc" />
+                <marker date="1537279755965" expanded="true" signature="3614:3682" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/manage.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="66">
+              <caret line="3" column="9" selection-start-line="3" selection-start-column="9" selection-end-line="3" selection-end-column="9" />
+              <folding>
+                <element signature="e#0#40#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>\# CONFIG \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\n\# PACKAGES\n\#\# Flask\nfrom flask import Flask\, request\, abort\n\#\# Line\nfrom linebot import \( LineBotApi\, WebhookHandler \)\nfrom linebot\.exceptions import \( InvalidSignatureError \)\nfrom linebot\.models import \( MessageEvent\, PostbackEvent\, TextMessage\, TextSendMessage\, FollowEvent \)\n\#\# MySQL\nfrom flask_sqlalchemy import SQLAlchemy\nfrom sqlalchemy\.sql import text\nimport pymysql\n\#\# else\nimport json\, requests\n\n\# APP\.CONSTANTS\n\#\# Line\nline_key\=json\.load\(open\(\&quot;\.\/requirements\/line_key\&quot;\, \'r\'\)\)\nCHANNEL_ACCESS_TOKEN \= line_key\.get\(\&quot;Channel_access_token\&quot;\)\nCHANNEL_SECRET \= line_key\.get\(\&quot;Channel_secret\&quot;\)\nMY_USER_ID \= line_key\.get\(\&quot;My_user_ID\&quot;\)\nRICH_MENU_ID \= line_key\.get\(\&quot;Rich_menu_ID\&quot;\)\n\'\'\' yet to be used\nCHANNEL_ID \= line_key\.get\(\&quot;Channel_ID\&quot;\)\nSERVER_URL \= line_key\.get\(\&quot;Server_URL\&quot;\)\n\'\'\'\n\#\# MySQL\nmysql_key\=json\.load\(open\(\&quot;\.\/requirements\/mysql_key\&quot;\, \'r\'\)\)\nHOST \= mysql_key\.get\(\'Host\'\)\nUSER \= mysql_key\.get\(\&quot;User\&quot;\)\nPASSWD \= mysql_key\.get\(\&quot;Passwd\&quot;\)\nDB \= mysql_key\.get\(\&quot;DB\&quot;\)\nCHARTSET \= \&quot;utf8\&quot;\n\n\n\# APP\.INSTANCE\napp \= Flask\(__name__\, instance_relative_config\=True\)\napp\.config\[\'DEBUG\'\] \= None\n\n\n\# LINE CONNECT\nline_bot_api \= LineBotApi\(CHANNEL_ACCESS_TOKEN\)\nhandler \= WebhookHandler\(CHANNEL_SECRET\)\n\n\n\# MySQL CONNECT\napp\.config\[\'SQLALCHEMY_DATABASE_URI\'\] \= \'mysql\+pymysql\:\/\/\{user\}\:\{password\}\@\{host\}\:3306\/\{dbname\}\?charset\=\{charset\}\'\.format\(user\=USER\, password\=PASSWD\, host\=HOST\, dbname\=DB\, charset\=CHARTSET\)\napp\.config\[\'SQLALCHEMY_TRACK_MODIFICATIONS\'\] \= True\napp\.config\[\'SQLALCHEMY_ECHO\'\] \= True\ndb \= SQLAlchemy\(app\)\n\n\# APP \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\n\# MODELS\nclass employee\(db\.Model\)\:\n    __tablename__ \= \'employee\'\n    test_no \= db\.Column\(db\.Numeric\(4\)\, primary_key\=True\)\n    test_name \= db\.Column\(db\.String\(20\)\, nullable\=False\)\n     def __init__\(self\, test_no\, test_name\)\:\n        self\.test_no \= test_no\n        self\.test_name \= test_name\n    def __repr__\(self\)\:\n        return \'\&lt;Test \%r\&gt;\' \% self\.test_name\n\nclass Test\(db\.Model\)\:\n    __tablename__ \= \'test\'\n    id \= db\.Column\(db\.Numeric\(4\)\, primary_key\=True\)\n    test_name \= db\.Column\(db\.String\(20\)\, nullable\=False\)\n    def __init__\(self\, id\, test_name\)\:\n        self\.id \= id\n        self\.test_name \= test_name\n    def __repr__\(self\)\:\n        return \'\&lt;Test \%r\&gt;\' \% self\.test_name\n\n\n\# ROUTE\n\#\# route\/\n\@app\.route\(\&quot;\/\&quot;\, methods\=\[\'POST\'\]\)\ndef callback\(\)\:\n    \# get X\-Line\-Signature header value\n    signature \= request\.headers\[\'X\-Line\-Signature\'\]\n    \# get request body as text\n    body \= request\.get_data\(as_text\=True\)\n    app\.logger\.info\(\&quot;Request body\: \&quot; \+ body\)\n    \# handle webhook body\n    try\:\n        handler\.handle\(body\, signature\)\n    except InvalidSignatureError\:\n        abort\(400\)\n    return \'OK\'\n\n\@handler\.add\(FollowEvent\) \# message\=None\n\ndef get_profile\(event\)\:\n    try\:\n        profile \= line_bot_api\.get_profile\(event\.source\.user_id\)\n        user_id \= profile\.user_id\n        display_name \= profile\.display_name\n        picture_url \= profile\.picture_url\n        status_message \= profile\.status_message\n    except LineBotApiError as e\:\n        app\.logger\.exception\(e\)\n    \# 如果對的到user_id的資訊\，就代表是被unfollow又再回來\n    if user_id \: \n        line_bot_api\.reply_message\(event\.reply_token\,\n            TextSendMessage\(text\=\&quot;T\^T\.\.\.親\，你終於回來了\！我想您想的好苦啊\！\！\！\&quot;\)\)\n    \# 如果對不到user_id的資訊\，就代表是新會員\（進行資料庫寫入\）\n    else\: \n        line_bot_api\.reply_message\(event\.reply_token\,\n            TextSendMessage\(text\=\&quot;歡迎加入吃冰大家族\！\，請輸入註冊電話或者信箱以進行綁定\&quot;\)\)\n        \# 寫入資料庫動作\n    linkMenuEndpoint\=\'https\:\/\/api\.line\.me\/v2\/bot\/user\/\%s\/richmenu\/\%s\' \% \(user_id\, RICH_MENU_ID\) \# 設定 request address\n    linkMenuRequestHeader\=\{\'Content\-Type\'\:\'image\/png\'\,\'Authorization\'\:\'Bearer \%s\' \% CHANNEL_ACCESS_TOKEN\} \# 設定 headers\n    lineLinkMenuResponse\=requests\.post\(linkMenuEndpoint\,headers\=linkMenuRequestHeader\)\n\n\@handler\.add\(PostbackEvent\)\ndef handle_post_message\(event\)\:\n    profile \= line_bot_api\.get_profile\(event\.source\.user_id\)\n    if \(event\.postback\.data\.find\(\'orderHistory\'\)\=\= 0\)\:\n        line_bot_api\.reply_message\(event\.reply_token\, \n            TextMessage\(text\=\&quot;Here\'s your Last Order\&quot;\)\)\n    elif \(event\.postback\.data\.find\(\'myCoupon\'\)\=\= 0\)\:\n        \# take data\n        line_bot_api\.reply_message\(event\.reply_token\, \n            TextMessage\(text\=\&quot;Oh\! Empty\!\&quot;\)\)\n    elif \(event\.postback\.data\.find\(\'customerService\'\)\=\= 0\)\:\n        line_bot_api\.reply_message\(event\.reply_token\,\n            TextMessage\(text\=\&quot;Please type your suggest below\. Any Command is welcome\.\&quot;\)\)\n\#        \@handler\.add\(MessageEvent\, message\=TextMessage\)\n\#        def handle_message\(event\)\:\n\#            while True\: \n\#                if event\.message\.text \!\= \&quot;客服專區\&quot;\:\n\#                    with open\(\&quot;\.\/customerComplain\.txt\&quot;\, \&quot;a\&quot;\) as f\:\n\#                        f\.write\(event\.message\.text\)\n\#                    line_bot_api\.reply_message\(event\.reply_token\,\n\#                        TextMessage\(text\=\&quot;Thank you\, We will reply you ASAP\.\&quot;\)\)\n\#                    break\n</find>
+    </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/venv/linechatbot_v1.py" />
+        <option value="$PROJECT_DIR$/test1.py" />
+        <option value="$PROJECT_DIR$/linechatbot_v1.py" />
+        <option value="$PROJECT_DIR$/app.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="69" />
+    <option name="y" value="31" />
+    <option name="width" value="1082" />
+    <option name="height" value="1010" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="LineChatBot" type="b2602c69:ProjectViewProjectNode" />
+              <item name="LineChatBot" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/manage.py" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager">
+    <configuration name="line" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="LineChatBot" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python3.6" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/manage.py" />
+      <option name="PARAMETERS" value="runserver 0.0.0.0:5000" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.line" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d7d7add7-d8b1-4794-9661-af9a8d1a9104" name="Default Changelist" comment="" />
+      <created>1536129461682</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1536129461682</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="69" y="31" width="1082" height="1010" extended-state="0" />
+    <editor active="true" />
+    <layout>
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12747875" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.37118322" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Python Console" order="10" weight="0.32993197" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/linechatbot_v1.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="176">
+          <caret line="8" column="28" selection-start-line="8" selection-start-column="28" selection-end-line="8" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test1.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="154">
+          <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/manage.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="66">
+          <caret line="3" column="9" selection-start-line="3" selection-start-column="9" selection-end-line="3" selection-end-column="9" />
+          <folding>
+            <element signature="e#0#40#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="442">
+          <caret line="110" column="15" lean-forward="true" selection-start-line="110" selection-start-column="15" selection-end-line="110" selection-end-column="15" />
+          <folding>
+            <element signature="n#!!doc" />
+            <marker date="1537279755965" expanded="true" signature="3614:3682" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
