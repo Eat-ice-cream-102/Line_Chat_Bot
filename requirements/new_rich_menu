@@ -1,0 +1,50 @@
+{
+  "size": {
+    "width": 2500,
+    "height": 1686
+  },
+  "selected": true,
+  "name": "MENU",
+  "chatBarText": "查看更多資訊",
+  "areas": [
+    {
+      "bounds": {
+        "x": 83,
+        "y": 1108,
+        "width": 600,
+        "height": 258
+      },
+      "action": {
+        "type": "postback",
+        "text": "店家地址",
+        "data": "[menu]location"
+      }
+    },
+    {
+      "bounds": {
+        "x": 944,
+        "y": 307,
+        "width": 555,
+        "height": 245
+      },
+      "action": {
+        "type": "postback",
+        "text": "官方網頁",
+        "data": "[menu]web"
+      }
+    },
+    {
+      "bounds": {
+        "x": 1750,
+        "y": 1112,
+        "width": 702,
+        "height": 233
+      },
+      "action": {
+        "type": "postback",
+        "text": "有話要說",
+        "data": "[menu]customerService"
+      }
+    }
+  ]
+}
