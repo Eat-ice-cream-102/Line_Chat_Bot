@@ -44,6 +44,6 @@ linkMenuRequestHeader={'Content-Type':'image/png','Authorization':'Bearer %s' % 
 lineLinkMenuResponse=requests.post(linkMenuEndpoint,headers=linkMenuRequestHeader) # Link Response empty JSON
 
 ## get RichMenu Image
-getRichMenuImageEndpoint = 'https://api.line.me/v2/bot/richmenu/%s/content' % '179f7e16d4d627de7fd1c50bf92cffaa'
+getRichMenuImageEndpoint = 'https://api.line.me/v2/bot/richmenu/%s/content' % RICH_MENU_ID
 getRichMenuImageHeader = {'Authorization':'Bearer %s' % CHANNEL_ACCESS_TOKEN}
 getRichMenuImageResponse=requests.get(getRichMenuImageEndpoint,headers=getRichMenuImageHeader)
