@@ -1,14 +1,18 @@
 # Flask structor
++-------------------------------------------
 ---README.md
 +--manage.py
 +--config.py
 +--app.py
 +--(requirements)+--line_key
 |                +--mysql_key
-|                +--new_rich_menu
-|                +--rich_menu
-+--(static)+--rich_menu.png
-
++--(static)+--(image)+--rich_menu.png
+|          |         +--new_rich_menu.png
+|          +--(richmenu)+--rich_menu
+|          |            +--new_rich_menu
+|          +--(message)+--survey
+|                      +--recommend
++-------------------------------------------
 # RichMenu Setting
 ## load LineChatBot key
 line_key=json.load(open("./requirements/line_key", 'r'))
@@ -21,7 +25,7 @@ RICH_MENU_ID = line_key.get("Rich_menu_ID")
 
 ## 2. Create a rich menu
 ### 2-1. Create a rich menu objec: 把做好的myJsonRichMenu另外存放成檔案
-menuJson = json.load(open("./requirements/rich_menu", 'r'))
+menuJson = json.load(open("./static/richmenu/rich_menu", 'r'))
 ### 2-2. Send an HTTP POST request to the '/v2/bot/richmenu' endpoint
 createMenuEndpoint = 'https://api.line.me/v2/bot/richmenu' # 設定 request address
 createMenuRequestHeader={'Content-Type':'application/json','Authorization':'Bearer %s' % CHANNEL_ACCESS_TOKEN} # 設定 headers
@@ -31,7 +35,7 @@ uploadRichMenuId=json.loads(lineCreateMenuResponse.text).get("richMenuId")
 ## 3. Upload the rich image
 uploadMenuEndpoint='https://api.line.me/v2/bot/richmenu/%s/content' % RICH_MENU_ID # 設定 request address
 uploadMenuRequestHeader={'Content-Type':'image/png','Content-Length': '348', 'Authorization':'Bearer %s' % CHANNEL_ACCESS_TOKEN} # 設定 headers
-uploadImageFile=open("./static/rich_menu.png",'rb') # 設定上傳圖片
+uploadImageFile=open("./static/image/rich_menu.png",'rb') # 設定上傳圖片
 lineUploadMenuResponse=requests.post(uploadMenuEndpoint,headers=uploadMenuRequestHeader,data=uploadImageFile) # response an array of rich menu response objects
 
 ## 4. Link the rich image to individual user
