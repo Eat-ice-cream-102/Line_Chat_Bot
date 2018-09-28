@@ -1,0 +1,35 @@
+carousel_template_message = TemplateSendMessage(
+    alt_text='Carousel template',
+    template=CarouselTemplate(
+        columns=[
+            CarouselColumn(
+                thumbnail_image_url='https://cdn02.pinkoi.com/product/WgpDNU3A/0/1/800x0.jpg',
+                text='【 花．月 】滿月款乾燥花系列 (可改耳夾)',
+                actions=[
+                    URIAction(
+                        label='More Infomation',
+                        uri='https://www.pinkoi.com/product/WgpDNU3A?category=2&ref_itemlist=A3usKgDX'
+                    )
+                ]
+            ),
+            CarouselColumn(
+                thumbnail_image_url='https://cdn01.pinkoi.com/product/AFzvkkdF/0/1/800x0.jpg',
+                text='粉藍富士山 貼式耳夾耳針 垂墜耳夾耳針 手工耳環',
+                actions=[
+                    URIAction(
+                        label='More Infomation',
+                        uri='https://www.pinkoi.com/product/AFzvkkdF?category=2&ref_itemlist=PQhSYErJ'
+                    )
+                ]
+            )
+        ]
+    )
+)
+
+columns = []
+----max 10 times
+uriAction = URIAction(lable, uri='')
+carouselColumn = CarouselColumn(thumbnail_image_url,text,actions=[uriAction])
+columns.append(carouselColumn)
+----
+TemplateSendMessage(alt_text='Carousel template', template=CarouselTemplate(columns)

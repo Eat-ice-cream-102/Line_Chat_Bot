@@ -5,13 +5,13 @@ from flask import Flask, request, abort
 ## Line
 from linebot import (LineBotApi, WebhookHandler)
 from linebot.exceptions import (InvalidSignatureError, LineBotApiError)
-from linebot.models import (TemplateSendMessage, CarouselTemplate, MessageEvent, PostbackEvent, TextMessage, TextSendMessage, FollowEvent)
+from linebot.models import *
 ## MySQL
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 import pymysql
 ## else
-import json, requests, time
+import json, time, datetime, re, requests
 
 # APP.CONSTANTS
 ## Line
@@ -58,7 +58,7 @@ class employee(db.Model):
         self.test_name = test_name
     def __repr__(self):
         return '%s' % self.line
-
+#record in_out
 class test(db.Model):
     __tablename__ = 'test'
     test_no = db.Column(db.Numeric(10), primary_key=True)
@@ -69,22 +69,19 @@ class test(db.Model):
         self.phone = phone
         self.in_out = in_out
     def __repr__(self):
-        return '%s,%s,%s' % (self.phone, self.in_out, test_no)
+        return '%s,%s,%s' % (self.phone, self.in_out, self.test_no)
 
 class survey (db.Model):
     __tablename__ = 'survey'
-    __table_args__ = (db.PrimaryKeyConstraint('line', 'survey_no'))
-    survey_no = db.Column(db.Numeric(10), nullable=False)
-    line = db.Column(db.String(40), nullable=False)
-    time = db.Column(db.datetime.datetime(10))
+    survey_no = db.Column(db.Integer, primary_key=True)
+    test_no = db.Column(db.Numeric(10), db.ForeignKey('test.test_no'), nullable=False)
+    time = db.Column(db.DateTime)
     satisfaction = db.Column(db.Numeric(1))
-    command = db.Column(db.String(50))
-    def __init__(self, line, satisfaction, time=datetime.datetime.now()):
-        self.line = line
-        self.satisfaction = satisfaction
+    def __init__(self, test_no, time=datetime.datetime.now()):
+        self.test_no = test_no
         self.time = time
     def __repr__(self):
-        return '%s,%s' % (self.survey_no, self.satisfaction)
+        return '%s' % (self.satisfaction)
 
 # ROUTE
 ## route/
@@ -102,41 +99,97 @@ def callback():
         abort(400)
     return 'OK'
 
-def recommend():
-    UNRECOMMENDED_STATUS = test.query.filter(test.in_out != 2)
-    OUT_STATUS = 0
-    IN_STATUS = 1
-    # check if any non-recommend issue
-    while UNRECOMMENDED_STATUS.one_or_none():
+'''FAILED SECTION
+recommendEndpoint = "https://api.line.me/v2/bot/message/push"
+recommendHeaders = {'Content-Type': 'application/json', 'Authorization': f'Bearer {CHANNEL_ACCESS_TOKEN}'}
+loadRecommendJson = json.load(open("./static/message/recommend", 'r'))  # set recommend-list
+recommendData = {"to": line, "messages": [loadRecommendJson]}
+recommend_response = requests.post(recommendEndpoint, headers=recommendHeaders, data=recommendData)
+'''
+UNRECOMMENDED_STATUS = test.query.filter(test.in_out != 2)
+OUT_STATUS = 0
+IN_STATUS = 1
+RECOMMEND_FINISHED = 2
+# check if any non-recommend issue
+while True:
+    if UNRECOMMENDED_STATUS.one_or_none():
         # is it possibile below first() represent two different user_id??
-        phone = UNRECOMMENDED_STATUS.first().split(',')[0]
-        status = UNRECOMMENDED_STATUS.first().split(',')[1]
-        test_no = UNRECOMMENDED_STATUS.first().split(',')[2]
-        user_id = employee.query.filter(employee.phone == phone)
+        phone = UNRECOMMENDED_STATUS.first().phone
+        status = UNRECOMMENDED_STATUS.first().in_out
+        test_no = UNRECOMMENDED_STATUS.first().test_no
+        line = employee.query.filter(employee.phone == phone).one().line
         # make sure we have buyer's line_id
-        if user_id != None:
+        if line != None:
             # in situation
             if status == IN_STATUS:
                 # push best-seller items
-                recommendEndpoint = "http://api.line.me/v2/bot/message/push"
-                recommendHeaders = {"Content-Type": "application/json", "Authorization": f'"Bearer {CHANNEL_ACCESS_TOKEN}"'}
-                uploadRecommendJson = json.load(open("./requirements/recommend", 'r'))  # set recommend-list
-                recommendData = {"to": user_id, "messages": uploadRecommendJson}
-                recommend_response = requests.post(recommendEndpoint, headers=recommendHeaders, data=recommendData)
+                columns = []
+                for i in range(0,9,1):
+                    uriAction = URIAction(lable, uri='')
+                    carouselColumn = CarouselColumn(thumbnail_image_url, text, actions=[uriAction])
+                    columns.append(carouselColumn)
+                bestSell_templateMessage = TemplateSendMessage(
+                    alt_text='Carousel template',
+                    template=CarouselTemplate(columns)
+                )
+                line_bot_api.push_message(line, bestSell_templateMessage)
+                test.query.filter(test.test_no == test_no).update({"in_out" : RECOMMEND_FINISHED})
+                db.session.commit()
             # out situation
             elif status == OUT_STATUS:
-                # push items according to bought-list
-                recommendEndpoint = "http://api.line.me/v2/bot/message/push"
-                recommendHeaders = {"Content-Type": "application/json", "Authorization": f'"Bearer {CHANNEL_ACCESS_TOKEN}"'}
-                uploadRecommendJson = json.load(open("./requirements/recommend", 'r'))  # set recommend-list
-                recommendData = {"to": user_id, "messages": uploadRecommendJson}
-                recommend_response = requests.post(recommendEndpoint, headers=recommendHeaders, data=recommendData)
-                surveyJson = json.load(open("./requirements/survey", 'r'))
-                surveyData = {"to": user_id, "messages": surveyJson}
-                recommend_response = requests.post(recommendEndpoint, headers=recommendHeaders, data=surveyData)
+                # push recommendTemplate
+                columns = []
+                for i in range(0,9,1):
+                    uriAction = URIAction(lable, uri='')
+                    carouselColumn = CarouselColumn(thumbnail_image_url, text, actions=[uriAction])
+                    columns.append(carouselColumn)
+                recommend_templateMessage = TemplateSendMessage(
+                    alt_text='Carousel template',
+                    template=CarouselTemplate(columns)
+                )
+                line_bot_api.push_message(line, recommend_templateMessage)
+
+                # create survey data
+                addSurvey = survey(test_no)
+                db.session.add(addSurvey)
+                # push surveyTemplate
+                survey_templateMessage = TemplateSendMessage(
+                    alt_text='Buttons template',
+                    template=ButtonsTemplate(
+                        thumbnail_image_url='https://epaper.land.gov.taipei/File/Get/93250086-fe2f-45c8-81e1-35a8c7836d6b',
+                        text='感謝您的光臨，請問對於今日整體購物體驗滿意嗎??',
+                        actions=[
+                            PostbackAction(
+                                label='非常滿意',
+                                text='非常滿意',
+                                data='[survey]4,%s'%test_no
+                            ),
+                            PostbackAction(
+                                label='滿意',
+                                text='滿意',
+                                data='[survey]3,%s'%test_no
+                            ),
+                            PostbackAction(
+                                label='不滿意',
+                                text='不滿意',
+                                data='[survey]2,%s'%test_no
+                            ),
+                            PostbackAction(
+                                label='非常不滿意',
+                                text='非常不滿意',
+                                data='[survey]1,%s'%test_no
+                            )
+                        ]
+                    )
+                )
+                line_bot_api.push_message(line, survey_templateMessage)
+                # update status
+                test.query.filter(test.test_no == test_no).update({"in_out" : RECOMMEND_FINISHED})
+                db.session.commit()
         else:
-            time.sleep(10)
-            break
+            continue
+    else:
+        time.sleep(10)
 
 @handler.add(FollowEvent)
 def handle_follow_event(event):
@@ -161,6 +214,7 @@ def handle_follow_event(event):
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
+    # fill in cellphone number to connect line account
     if re.match('(09\d{8})', event.message.text).groups():
         user_id = event.source.user_id
         sign_data = event.message.text
@@ -176,14 +230,19 @@ def handle_text_message(event):
 
 @handler.add(PostbackEvent)
 def handle_post_message(event):
+    # rich_menu function
     if event.postback.data.find('[menu]') == 0:
-        line_bot_api.reply_message(event.reply_token, TextMessage(text="Here's your Last Order"))
+        if event.postback.data[5:] == 'location':
+            line_bot_api.reply_message(event.reply_token, LocationSendMessage(title='吃冰', address='320桃園市中壢區中大路300號', latitude=24.967798, longitude=121.191802))
+        elif event.postback.data[5:] == 'web':
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text='https://google.com.tw'))
+        elif event.postback.data[5:] == 'custimerService':
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text='Any comment is welcome.'))
+    # survey function
     elif event.postback.data.find('[survey]') == 0:
-        satisfaction = event.postback.data[7:]
-        addOne = survey(event.source.user_id,satisfaction)
-        db.session.add(addOne)
+        test_no = re.match('[survey](\d),(\d+)', event.postback.data).group(1)
+        satisfaction = re.match('[survey](\d),(\d+)', event.postback.data).group(2)
+        survey.query.filter(survey.test_no == test_no).update({'satisfaction': satisfaction})
         db.session.commit()
         if satisfaction < 3:
-            line_bot_api.reply_message(event.reply_token, TextMessage(text="Here's your Last Order"))
-
-
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="We are sorry to cause your unpleasent, if you need our service member to contact you?"))

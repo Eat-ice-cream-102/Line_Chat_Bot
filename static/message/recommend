@@ -3,7 +3,6 @@
   "altText": "this is a carousel template",
   "template": {
     "type": "carousel",
-    "actions": [],
     "columns": [
       {
         "thumbnailImageUrl": "https://cdn02.pinkoi.com/product/WgpDNU3A/0/1/800x0.jpg",
