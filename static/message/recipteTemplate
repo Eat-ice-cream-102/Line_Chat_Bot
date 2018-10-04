@@ -1,0 +1,38 @@
+receipt_message = FlexSendMessage(
+	alt_text = Flex message,
+	contents = BubbleContainer(
+		header = BoxComponent(
+			contents = TextComponent(
+				text = "Receipt"
+			)
+		),
+ 		body=BoxComponent(
+			contents=[
+			    TextComponent(
+				    text = "#1"
+			    ),
+			    SeparatorComponent(),
+			    TextComponent(
+				    text = "unit"
+			    ),
+			    SeparatorComponent(),
+			    TextComponent(
+				    text = "Price"
+			    )
+			]
+		),
+		footer = BoxComponent(
+			contents = TextComponent(
+				text= "Total"
+			),
+			SeparatorComponent(),
+			TextComponent(
+				text =
+			)
+		),
+	)
+)
+
+		hero = ImageComponent(
+			url = None
+		),

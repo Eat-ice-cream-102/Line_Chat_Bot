@@ -9,9 +9,8 @@ from linebot.models import *
 ## MySQL
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
-import pymysql
 ## else
-import json, time, datetime, re, requests
+import json, time, re, requests
 
 # APP.CONSTANTS
 ## Line
@@ -44,47 +43,75 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
 
-
-# APP ###########################################
-# MODELS
-class employee(db.Model):
-    __tablename__ = 'employee'
+# Models ##########################################
+class customer(db.Model):
+    __tablename__ = 'customer'
     phone = db.Column(db.String(10), primary_key=True)
     line = db.Column(db.String(40))
-    test_name = db.Column(db.String(20), nullable=False)
+    customerName = db.Column(db.String(20), nullable=False)
     def __init__(self, phone, line, test_name):
         self.phone = phone
         self.line = line
         self.test_name = test_name
     def __repr__(self):
-        return '%s' % self.line
-#record in_out
-class test(db.Model):
-    __tablename__ = 'test'
-    test_no = db.Column(db.Numeric(10), primary_key=True)
-    phone = db.Column(db.String(10),db.ForeignKey('employee.phone'), nullable=False)
+        return '%s,%s' % (self.line, self.test_name)
+
+class inOutRecord(db.Model):
+    __tablename__ = 'inOutRecord'
+    come_time = db.Column(db.DateTime, primary_key=True)
+    phone = db.Column(db.String(10),db.ForeignKey('customer.phone'), nullable=False)
     in_out = db.Column(db.Numeric(1))
-    def __init__(self, test_no, phone, in_out):
-        self.test_no = test_no
+    def __init__(self, come_time, phone, in_out):
+        self.come_time = come_time
         self.phone = phone
         self.in_out = in_out
     def __repr__(self):
-        return '%s,%s,%s' % (self.phone, self.in_out, self.test_no)
+        return '%s,%s' % (self.phone, self.in_out)
 
 class survey (db.Model):
     __tablename__ = 'survey'
-    survey_no = db.Column(db.Integer, primary_key=True)
-    test_no = db.Column(db.Numeric(10), db.ForeignKey('test.test_no'), nullable=False)
-    time = db.Column(db.DateTime)
+    survey_no = db.Column(db.Integer, primary_key=True, nullable=False)
+    come_time = db.Column(db.DateTime, db.ForeignKey('inOutRecord.come_time'))
     satisfaction = db.Column(db.Numeric(1))
-    def __init__(self, test_no, time=datetime.datetime.now()):
-        self.test_no = test_no
-        self.time = time
+    needCall = db.Column(db.Numeric(1))
+    def __init__(self, come_time, satisfaction=None, needCall=None):
+        self.come_time = come_time
+        self.satisfaction = satisfaction
+        self.needCall = needCall
     def __repr__(self):
-        return '%s' % (self.satisfaction)
+        return '%s,%s,%s' % (self.come_time, self.satisfaction, self.needCall)
 
-# ROUTE
-## route/
+class product (db.Model):
+    __tablename__ = 'product'
+    product_id = db.Column(db.Integer, primary_key=True, nullable=False)
+    product_name = db.Column(db.String(50))
+    recommend_prod_id = db.Column(db.Integer)
+    product_pic_url = db.Column(db.String(255))
+    product_url = db.Column(db.String(255))
+    price = db.Column(db.Integer)
+    def __init__(self, product_name, recommend_prod_id, product_pic_url, product_url, price):
+        self.product_name = product_name
+        self.recommend_prod_id = recommend_prod_id
+        self.product_pic_url = product_pic_url
+        self.product_url = product_url
+        self.price = price
+    def __repr__(self):
+        return '%s,%s,%s,%s,%s' % (self.product_name, self.recommend_prod_id, self.product_pic_url, self.product_url, self.price)
+
+class orderList (db.Model):
+    __tablename__ = 'orderList'
+    purchase_no = db.Column(db.Integer, primary_key=True, nullable=False)
+    come_time = db.Column(db.DateTime, db.ForeignKey('inOutRecord.come_time'))
+    product_id = db.Column(db.Integer, db.ForeignKey('product.product_id'))
+    quantity = db.Column(db.Integer)
+    def __init__(self, come_time, product_id, quantity):
+        self.come_time = come_time
+        self.product_id = product_id
+        self.quantity = quantity
+    def __repr__(self):
+        return '%s,%s,%s' % (self.come_time, self.product_id, self.quantity)
+
+# APP ###########################################
 @app.route("/", methods=['POST'])
 def callback():
     # get X-Line-Signature header value
@@ -95,108 +122,17 @@ def callback():
     # handle webhook body
     try:
         handler.handle(body, signature)
+
     except InvalidSignatureError:
         abort(400)
     return 'OK'
-
-'''FAILED SECTION
-recommendEndpoint = "https://api.line.me/v2/bot/message/push"
-recommendHeaders = {'Content-Type': 'application/json', 'Authorization': f'Bearer {CHANNEL_ACCESS_TOKEN}'}
-loadRecommendJson = json.load(open("./static/message/recommend", 'r'))  # set recommend-list
-recommendData = {"to": line, "messages": [loadRecommendJson]}
-recommend_response = requests.post(recommendEndpoint, headers=recommendHeaders, data=recommendData)
-'''
-UNRECOMMENDED_STATUS = test.query.filter(test.in_out != 2)
-OUT_STATUS = 0
-IN_STATUS = 1
-RECOMMEND_FINISHED = 2
-# check if any non-recommend issue
-while True:
-    if UNRECOMMENDED_STATUS.one_or_none():
-        # is it possibile below first() represent two different user_id??
-        phone = UNRECOMMENDED_STATUS.first().phone
-        status = UNRECOMMENDED_STATUS.first().in_out
-        test_no = UNRECOMMENDED_STATUS.first().test_no
-        line = employee.query.filter(employee.phone == phone).one().line
-        # make sure we have buyer's line_id
-        if line != None:
-            # in situation
-            if status == IN_STATUS:
-                # push best-seller items
-                columns = []
-                for i in range(0,9,1):
-                    uriAction = URIAction(lable, uri='')
-                    carouselColumn = CarouselColumn(thumbnail_image_url, text, actions=[uriAction])
-                    columns.append(carouselColumn)
-                bestSell_templateMessage = TemplateSendMessage(
-                    alt_text='Carousel template',
-                    template=CarouselTemplate(columns)
-                )
-                line_bot_api.push_message(line, bestSell_templateMessage)
-                test.query.filter(test.test_no == test_no).update({"in_out" : RECOMMEND_FINISHED})
-                db.session.commit()
-            # out situation
-            elif status == OUT_STATUS:
-                # push recommendTemplate
-                columns = []
-                for i in range(0,9,1):
-                    uriAction = URIAction(lable, uri='')
-                    carouselColumn = CarouselColumn(thumbnail_image_url, text, actions=[uriAction])
-                    columns.append(carouselColumn)
-                recommend_templateMessage = TemplateSendMessage(
-                    alt_text='Carousel template',
-                    template=CarouselTemplate(columns)
-                )
-                line_bot_api.push_message(line, recommend_templateMessage)
-
-                # create survey data
-                addSurvey = survey(test_no)
-                db.session.add(addSurvey)
-                # push surveyTemplate
-                survey_templateMessage = TemplateSendMessage(
-                    alt_text='Buttons template',
-                    template=ButtonsTemplate(
-                        thumbnail_image_url='https://epaper.land.gov.taipei/File/Get/93250086-fe2f-45c8-81e1-35a8c7836d6b',
-                        text='感謝您的光臨，請問對於今日整體購物體驗滿意嗎??',
-                        actions=[
-                            PostbackAction(
-                                label='非常滿意',
-                                text='非常滿意',
-                                data='[survey]4,%s'%test_no
-                            ),
-                            PostbackAction(
-                                label='滿意',
-                                text='滿意',
-                                data='[survey]3,%s'%test_no
-                            ),
-                            PostbackAction(
-                                label='不滿意',
-                                text='不滿意',
-                                data='[survey]2,%s'%test_no
-                            ),
-                            PostbackAction(
-                                label='非常不滿意',
-                                text='非常不滿意',
-                                data='[survey]1,%s'%test_no
-                            )
-                        ]
-                    )
-                )
-                line_bot_api.push_message(line, survey_templateMessage)
-                # update status
-                test.query.filter(test.test_no == test_no).update({"in_out" : RECOMMEND_FINISHED})
-                db.session.commit()
-        else:
-            continue
-    else:
-        time.sleep(10)
 
 @handler.add(FollowEvent)
 def handle_follow_event(event):
     try:
         # 會員綁定賴帳戶檢查
         user_id = event.source.user_id
-        judge_id = employee.query.filter(employee.line == user_id)
+        judge_id = customer.query.filter(customer.line == user_id)
         # 如果對不到user_id的資訊，就代表是新會員（進行資料庫寫入）
         if judge_id.one_or_none() == None:
             line_bot_api.reply_message(event.reply_token,
@@ -215,18 +151,18 @@ def handle_follow_event(event):
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
     # fill in cellphone number to connect line account
-    if re.match('(09\d{8})', event.message.text).groups():
+    if re.match('(09\d{8})', event.message.text):
         user_id = event.source.user_id
         sign_data = event.message.text
-        connection = employee.query.filter(employee.phone == sign_data)
+        connection = customer.query.filter(customer.phone == sign_data)
         if connection.one_or_none() != None:
-            employee.query.filter(employee.phone == sign_data).update({'line': user_id})
+            customer.query.filter(customer.phone == sign_data).update({'line': user_id})
             db.session.commit()
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Connect Successfully."))
         else:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Not Found, Please Try Again."))
     else:
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=event.message.text))
+        pass
 
 @handler.add(PostbackEvent)
 def handle_post_message(event):
@@ -238,11 +174,157 @@ def handle_post_message(event):
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text='https://google.com.tw'))
         elif event.postback.data[5:] == 'custimerService':
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text='Any comment is welcome.'))
-    # survey function
-    elif event.postback.data.find('[survey]') == 0:
-        test_no = re.match('[survey](\d),(\d+)', event.postback.data).group(1)
-        satisfaction = re.match('[survey](\d),(\d+)', event.postback.data).group(2)
-        survey.query.filter(survey.test_no == test_no).update({'satisfaction': satisfaction})
+    # surveyTemplate function
+    elif event.postback.data.find('[surveyTemplate]') == 0:
+        satisfaction = re.match('\[surveyTemplate\](\d),(\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)', event.postback.data).group(1)
+        come_time = re.match('\[surveyTemplate\](\d),(\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)', event.postback.data).group(2)
+        survey.query.filter(survey.come_time == come_time).update({'satisfaction': satisfaction})
         db.session.commit()
-        if satisfaction < 3:
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="We are sorry to cause your unpleasent, if you need our service member to contact you?"))
+        if int(satisfaction) < 3:
+            needCall_templateMessage = TemplateSendMessage(
+                alt_text='Confirm template',
+                template=ConfirmTemplate(
+                    text='很抱歉造成您不好的購物體驗，請問需要客服人員的協助嗎???',
+                    actions=[
+                        PostbackAction(
+                            label='是',
+                            text='是',
+                            data=f'[needCall]1,{come_time}'
+                        ),
+                        PostbackAction(
+                            label='不用了',
+                            text='不用了',
+                            data=f'[needCall]0,{come_time}'
+                        ),
+                    ]
+                )
+            )
+            line_bot_api.reply_message(event.reply_token, needCall_templateMessage)
+        else:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="It's our pleasure."))
+    elif event.postback.data.find('[needCall]') == 0:
+        needCall = re.match('\[needCall\](\d),(\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)', event.postback.data).group(1)
+        come_time = re.match('\[needCall\](\d),(\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)', event.postback.data).group(2)
+        survey.query.filter(survey.come_time == come_time).update({'needCall': needCall})
+        db.session.commit()
+        if int(needCall) == 1:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="請稍待，我們將通知客服人員盡快與您聯繫"))
+        else:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="好的，如果有任何意見，歡迎寫信到customer_service@eatice.com.tw"))
+
+UNRECOMMENDED_STATUS = inOutRecord.query.filter(inOutRecord.in_out != 2)
+OUT_STATUS = 0
+IN_STATUS = 1
+RECOMMEND_FINISHED = 2
+if UNRECOMMENDED_STATUS.one_or_none():
+    come_time = UNRECOMMENDED_STATUS.first().come_time
+    phone = inOutRecord.query.filter(inOutRecord.come_time == come_time).one().phone
+    status = inOutRecord.query.filter(inOutRecord.come_time == come_time).one().in_out
+    line = customer.query.filter(customer.phone == phone).one().line
+    # make sure we have buyer's line_id
+    if line != None:
+        # in situation
+        if status == IN_STATUS:
+            # push bestSell_templateMessage
+            bestSell_sql = '''
+                 SELECT product_id, SUM(quantity) as sum
+                 FROM orderList
+                 WHERE come_time > DATE_SUB(NOW(), INTERVAL 30 DAY)
+                 GROUP BY product_id
+                 ORDER BY sum DESC LIMIT 5'''
+            result = db.engine.execute(text(bestSell_sql))
+            columns = []  # for CarouselTemplate
+            for i in result:
+                product_id = i['product_id']
+                uri = product.query.filter(product.product_id == product_id).one().product_url
+                thumbnail_image_url = product.query.filter(
+                    product.product_id == product_id).one().product_pic_url
+                text = product.query.filter(product.product_id == product_id).one().product_name
+                carouselColumn = CarouselColumn(
+                    thumbnail_image_url=thumbnail_image_url,
+                    text=text,
+                    actions=[
+                        URIAction(
+                            label='More Information',
+                            uri=uri
+                        )
+                    ]
+                )
+                columns.append(carouselColumn)
+            bestSell_templateMessage = TemplateSendMessage(
+                alt_text='Carousel template',
+                template=CarouselTemplate(columns=columns)
+            )
+            line_bot_api.push_message(line, TextSendMessage(text="Welcome! Please refer are our best-selling items below!"))
+            line_bot_api.push_message(line, bestSell_templateMessage)
+            inOutRecord.query.filter(inOutRecord.come_time == come_time).update({"in_out": RECOMMEND_FINISHED})
+            db.session.commit()
+        # out situation
+        elif status == OUT_STATUS:
+
+
+            # push receipt and recommend_templateMessage
+            body_contents = [] # for receipt
+            footer_contents = [] # for receipt
+            columns = []  # for CarouselTemplate
+            order = orderList.query.filter(orderList.come_time == come_time).group_by(orderList.product_id).limit(10).all()
+            for i in order:
+                recommend_prod_id = product.query.filter(product.product_id == i.product_id).one().recommend_prod_id
+                uri = product.query.filter(product.product_id == recommend_prod_id).one().product_url
+                thumbnail_image_url = product.query.filter(product.product_id == recommend_prod_id).one().product_pic_url
+                text = product.query.filter(product.product_id == recommend_prod_id).one().product_name
+                carouselColumn = CarouselColumn(
+                    thumbnail_image_url=thumbnail_image_url,
+                    text=text,
+                    actions=[
+                        URIAction(
+                            label='More Information',
+                            uri=uri
+                        )
+                    ]
+                )
+                columns.append(carouselColumn)
+            recommend_templateMessage = TemplateSendMessage(
+                alt_text='Carousel template',
+                template=CarouselTemplate(columns=columns)
+            )
+            line_bot_api.push_message(line,TextSendMessage(text="Hey, you may be interesting in these."))
+            line_bot_api.push_message(line, recommend_templateMessage)
+
+            # create surveyTemplate data
+            addSurvey = survey(come_time)
+            db.session.add(addSurvey)
+            # push surveyTemplate
+            survey_templateMessage = TemplateSendMessage(
+                alt_text='Buttons template',
+                template=ButtonsTemplate(
+                    thumbnail_image_url='https://epaper.land.gov.taipei/File/Get/93250086-fe2f-45c8-81e1-35a8c7836d6b',
+                    text='感謝您的光臨，請問對於今日整體購物體驗滿意嗎??',
+                    actions=[
+                        PostbackAction(
+                            label='非常滿意',
+                            text='非常滿意',
+                            data=f'[surveyTemplate]4,{come_time}'
+                        ),
+                        PostbackAction(
+                            label='滿意',
+                            text='滿意',
+                            data=f'[surveyTemplate]3,{come_time}'
+                        ),
+                        PostbackAction(
+                            label='不滿意',
+                            text='不滿意',
+                            data=f'[surveyTemplate]2,{come_time}'
+                        ),
+                        PostbackAction(
+                            label='非常不滿意',
+                            text='非常不滿意',
+                            data=f'[surveyTemplate]1,{come_time}'
+                        )
+                    ]
+                )
+            )
+            line_bot_api.push_message(line, survey_templateMessage)
+            # update status
+            inOutRecord.query.filter(inOutRecord.come_time == come_time).update({"in_out": RECOMMEND_FINISHED})
+            db.session.commit()

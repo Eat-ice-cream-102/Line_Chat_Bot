@@ -3,7 +3,7 @@ carousel_template_message = TemplateSendMessage(
     template=CarouselTemplate(
         columns=[
             CarouselColumn(
-                thumbnail_image_url='https://cdn02.pinkoi.com/product/WgpDNU3A/0/1/800x0.jpg',
+                thumbnail_image_url='https://images-na.ssl-images-amazon.com/images/I/918YNa3bAaL._SY355_.jpg',
                 text='【 花．月 】滿月款乾燥花系列 (可改耳夾)',
                 actions=[
                     URIAction(
@@ -25,11 +25,3 @@ carousel_template_message = TemplateSendMessage(
         ]
     )
 )
-
-columns = []
-----max 10 times
-uriAction = URIAction(lable, uri='')
-carouselColumn = CarouselColumn(thumbnail_image_url,text,actions=[uriAction])
-columns.append(carouselColumn)
-----
-TemplateSendMessage(alt_text='Carousel template', template=CarouselTemplate(columns)

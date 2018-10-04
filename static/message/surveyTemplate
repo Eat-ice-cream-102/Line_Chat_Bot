@@ -64,3 +64,45 @@ survey_templateMessage = TemplateSendMessage(
         ]
     )
 )
+
+{
+  "type": "template",
+  "altText": "this is a confirm template",
+  "template": {
+    "type": "confirm",
+    "actions": [
+      {
+        "type": "postback",
+        "label": "是",
+        "text": "是",
+        "data": "[needCall]Yes"
+      },
+      {
+        "type": "postback",
+        "label": "否",
+        "text": "否",
+        "data": "[needCall]No"
+      }
+    ],
+    "text": "很抱歉造成您不好的購物體驗，請問需要我們客服人員協助嗎??"
+  }
+}
+
+needCall_templateMessage = TemplateSendMessage(
+    alt_text='Confirm template',
+    template=ConfirmTemplate(
+        text='很抱歉造成您不好的購物體驗，請問需要我們客服人員協助嗎???',
+        actions=[
+            PostbackAction(
+                label='是',
+                text='是',
+                data='[needCall]Yes'
+            ),
+            PostbackAction(
+                label='否',
+                text='否',
+                data='[needCall]No'
+            ),
+        ]
+    )
+)
