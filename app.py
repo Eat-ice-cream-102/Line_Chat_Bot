@@ -212,6 +212,7 @@ def handle_post_message(event):
         else:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="好的，如果有任何意見，歡迎寫信到customer_service@eatice.com.tw"))
 
+# Recommend System ######################
 UNRECOMMENDED_STATUS = inOutRecord.query.filter(inOutRecord.in_out != 2)
 OUT_STATUS = 0
 IN_STATUS = 1
