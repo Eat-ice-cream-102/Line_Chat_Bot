@@ -1,38 +1,44 @@
-receipt_message = FlexSendMessage(
-	alt_text = Flex message,
-	contents = BubbleContainer(
-		header = BoxComponent(
-			contents = TextComponent(
-				text = "Receipt"
-			)
-		),
- 		body=BoxComponent(
-			contents=[
-			    TextComponent(
-				    text = "#1"
-			    ),
-			    SeparatorComponent(),
-			    TextComponent(
-				    text = "unit"
-			    ),
-			    SeparatorComponent(),
-			    TextComponent(
-				    text = "Price"
-			    )
-			]
-		),
-		footer = BoxComponent(
-			contents = TextComponent(
-				text= "Total"
-			),
-			SeparatorComponent(),
-			TextComponent(
-				text =
-			)
-		),
-	)
-)
 
-		hero = ImageComponent(
-			url = None
-		),
+recipteMessage = FlexSendMessage(alt_text = "Flex message", contents = flexSendContents)
+
+flexSendContents = BubbleContainer(
+    header = BoxComponent(
+        layout = "vertical",
+        contents = [
+            TextComponent(
+                text = "Receipt"
+            )
+        ]
+    ),
+    body = BoxComponent(
+        layout = "horizontal",
+        contents = [
+            TextComponent(
+                text = "Item\nAAA\nBBB",
+                wrap = True, align = "start",
+                flex = 1
+            ),
+            TextComponent(
+                text = "content\naaa\nbbb",
+                wrap = True, align = "end",
+                flex = 2)
+        ]
+    ),
+    footer = BoxComponent(
+        layout = "horizontal",
+        contents = [
+            TextComponent(
+                text = "Total",
+                wrap = True,
+                align = "start",
+                flex = 1
+            ),
+            TextComponent(
+                text = "amount",
+                wrap = True,
+                align = "end",
+                flex = 2
+            )
+        ]
+    )
+)

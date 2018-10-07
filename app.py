@@ -9,10 +9,12 @@ from linebot.models import *
 ## MySQL
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
-from sqlalchemy import event
-
 ## else
 import json, time, re, requests, os
+
+# APP.INSTANCE
+app = Flask(__name__, instance_relative_config=True, static_url_path='/static')
+app.config['DEBUG'] = None
 
 # APP.CONSTANTS
 ## Line
@@ -31,10 +33,6 @@ PASSWD = mysql_key.get("Passwd")
 DB = mysql_key.get("DB")
 CHARTSET = "utf8"
 
-# APP.INSTANCE
-app = Flask(__name__, instance_relative_config=True, static_url_path='/static')
-app.config['DEBUG'] = None
-
 # CONNECTION
 ## LINE CONNECT
 line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
@@ -44,9 +42,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{USER}:{PASSWD}@{HOST}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
-
-# BUILD SUB-PROGRESSION
-pid = os.fork()
 
 # Models ##########################################
 class customer(db.Model):
@@ -175,12 +170,12 @@ def handle_text_message(event):
 def handle_post_message(event):
     # rich_menu function
     if event.postback.data.find('[menu]') == 0:
-        if event.postback.data[5:] == 'location':
+        if event.postback.data[6:] == 'location':
             line_bot_api.reply_message(event.reply_token, LocationSendMessage(title='吃冰', address='320桃園市中壢區中大路300號', latitude=24.967798, longitude=121.191802))
-        elif event.postback.data[5:] == 'web':
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text='https://google.com.tw'))
-        elif event.postback.data[5:] == 'custimerService':
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text='Any comment is welcome.'))
+        elif event.postback.data[6:] == 'web':
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text='https://192.168.196.59:8888/index/'))
+        elif event.postback.data[6:] == 'customerService':
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text='Any comment is welcome.\nTel: 03-1231231\nE-mail: customerService@eatice.com.tw'))
     # surveyTemplate function
     elif event.postback.data.find('[surveyTemplate]') == 0:
         satisfaction = re.match('\[surveyTemplate\](\d),(\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)', event.postback.data).group(1)
@@ -219,15 +214,19 @@ def handle_post_message(event):
         else:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="好的，如果有任何意見，歡迎寫信到customer_service@eatice.com.tw"))
 
-# Recommend System ######################
+
+# RECOMMEND-SYS SUB-PROGRESSION##################
+
+pid = os.fork()
 if pid == 0:
 
     OUT_STATUS = 0
     IN_STATUS = 1
     RECOMMEND_FINISHED = 2
     while True:
+        db.session.commit()
         UNRECOMMENDED_STATUS = inOutRecord.query.filter(inOutRecord.in_out != 2)
-        if inOutRecord.query.filter(inOutRecord.in_out != 2).first():
+        if UNRECOMMENDED_STATUS.first():
             come_time = UNRECOMMENDED_STATUS.first().come_time
             phone = inOutRecord.query.filter(inOutRecord.come_time == come_time).one().phone
             status = inOutRecord.query.filter(inOutRecord.come_time == come_time).one().in_out
@@ -272,14 +271,92 @@ if pid == 0:
                     db.session.commit()
                 # out situation
                 elif status == OUT_STATUS:
+                    # push receipt
+                    receipt_item = "Item\n"
+                    receipt_unit = "Unit\n"
+                    receipt_price = "Price\n"
+                    receipt_amount = "Amount\n"
+                    total_price = 0
+                    full_order = orderList.query.filter(orderList.come_time == come_time).group_by(orderList.product_id).all()
+                    for i in full_order:
+                        product_name = product.query.filter(product.product_id == i.product_id).one().product_name
+                        product_price = product.query.filter(product.product_id == i.product_id).one().price
+                        product_unit = i.quantity
+                        total_price += product_price*product_unit
+                        receipt_item += f"{product_name}\n"
+                        receipt_unit += f"{product_unit}\n"
+                        receipt_price += f"{product_price}\n"
+                        receipt_amount += f"{product_unit*product_price}\n"
+                    flexSendContents = BubbleContainer(
+                        header = BoxComponent(
+                            layout = "vertical",
+                            contents = [
+                                TextComponent(
+                                    text = "Receipt",
+                                    weight = "bold"
+                                ),
+                            ]
+                        ),
+                        body = BoxComponent(
+                            layout = "horizontal",
+                            spacing = "lg",
+                            contents = [
+                                TextComponent(
+                                    text = receipt_item,
+                                    wrap = True, 
+                                    align = "start",
+                                    flex = 0,
+                                    size = "xxs",
+                                    maxLines = 1
+                                ),
+                                TextComponent(
+                                    text = receipt_unit,
+                                    wrap = True, 
+                                    align = "end",
+                                    flex = 4,
+                                    size = "xxs"
+                                ),
+                                TextComponent(
+                                    text = receipt_price,
+                                    wrap = True, 
+                                    align = "start",
+                                    flex = 7,
+                                    size = "xxs"
+                                ),
+                                TextComponent(
+                                    text = receipt_amount,
+                                    wrap = True, 
+                                    align = "start",
+                                    flex = 8,
+                                    size = "xxs"
+                                )
 
-
-                    # push receipt and recommend_templateMessage
-                    body_contents = [] # for receipt
-                    footer_contents = [] # for receipt
-                    columns = []  # for CarouselTemplate
-                    order = orderList.query.filter(orderList.come_time == come_time).group_by(orderList.product_id).limit(10).all()
-                    for i in order:
+                            ]
+                        ),
+                        footer = BoxComponent(
+                            layout = "horizontal",
+                            contents = [
+                                TextComponent(
+                                    text = "Total",
+                                    wrap = True,
+                                    align = "start",
+                                    weight = "bold"
+                                ),
+                                TextComponent(
+                                    text = f"{total_price}",
+                                    wrap = True,
+                                    align = "end",
+                                    weight = "bold"
+                                )
+                            ]
+                        )
+                    )
+                    recipteFlexMessage = FlexSendMessage(alt_text = "Flex message", contents = flexSendContents)
+                    line_bot_api.push_message(line, recipteFlexMessage)
+                    # push recommend_templateMessage
+                    limit_order = orderList.query.filter(orderList.come_time == come_time).group_by(orderList.product_id).limit(10).all()
+                    re_columns = []  # for CarouselTemplate
+                    for i in limit_order:
                         recommend_prod_id = product.query.filter(product.product_id == i.product_id).one().recommend_prod_id
                         uri = product.query.filter(product.product_id == recommend_prod_id).one().product_url
                         thumbnail_image_url = product.query.filter(product.product_id == recommend_prod_id).one().product_pic_url
@@ -294,15 +371,15 @@ if pid == 0:
                                 )
                             ]
                         )
-                        columns.append(carouselColumn)
+                        re_columns.append(carouselColumn)
                     recommend_templateMessage = TemplateSendMessage(
                         alt_text='Carousel template',
-                        template=CarouselTemplate(columns=columns)
+                        template=CarouselTemplate(columns=re_columns)
                     )
                     line_bot_api.push_message(line,TextSendMessage(text="Hey, you may be interesting in these."))
                     line_bot_api.push_message(line, recommend_templateMessage)
                     # create surveyTemplate data
-                    addSurvey = survey(come_time)
+                    addSurvey = survey(come_time, needCall=0)
                     db.session.add(addSurvey)
                     # push surveyTemplate
                     survey_templateMessage = TemplateSendMessage(
@@ -339,4 +416,5 @@ if pid == 0:
                     inOutRecord.query.filter(inOutRecord.come_time == come_time).update({"in_out": RECOMMEND_FINISHED})
                     db.session.commit()
         else:
-            db.session.commit()
+            time.sleep(30)
+

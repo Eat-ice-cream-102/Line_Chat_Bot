@@ -35,7 +35,7 @@ uploadRichMenuId=json.loads(lineCreateMenuResponse.text).get("richMenuId")
 ## 3. Upload the rich image
 uploadMenuEndpoint='https://api.line.me/v2/bot/richmenu/%s/content' % RICH_MENU_ID # 設定 request address
 uploadMenuRequestHeader={'Content-Type':'image/png','Content-Length': '348', 'Authorization':'Bearer %s' % CHANNEL_ACCESS_TOKEN} # 設定 headers
-uploadImageFile=open("./static/image/rich_menu.png",'rb') # 設定上傳圖片
+uploadImageFile=open("./static/image/new_rich_menu.png",'rb') # 設定上傳圖片
 lineUploadMenuResponse=requests.post(uploadMenuEndpoint,headers=uploadMenuRequestHeader,data=uploadImageFile) # response an array of rich menu response objects
 
 ## 4. Link the rich image to individual user
