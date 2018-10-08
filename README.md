@@ -1,3 +1,23 @@
+
+# Build My Environment
+## Ubuntu 16.04 update and timeset
+> sudo apt update
+> sudo apt upgrade
+> sudo apt-get update
+> sudo apt install curl
+> sudo timedatectl set-timezone "Asia/Taipei"
+## Install Docker
+> curl -fsSL get.docker.com | sh
+> sudo usermod -aG docker your-user
+> sudo systemctl enable docker
+### Re-login to use docker commend directly 
+> docker build -t="eatIceCream/linechatbot"
+> docker run --name linechatbot --link some-mysql -v ~/LineChatBot:~/LineChatBot eatIceCream/linechatbot -p 5000:5000 -link
+> docker run --name line-ngrok -d -p 4040 --link linechatbot wernight/ngrok ngrok http linechatbot:5000
+> curl $(docker port line-ngrok 4040)/api/tunnels > tunnels.json
+## Install git
+> sudo apt install git
+
 # Flask structor
 ```
 +-------------------------------------------
@@ -7,12 +27,9 @@
 +--app.py
 +--(requirements)+--line_key
 |                +--mysql_key
+|                +--lineTest_sample.sql
 +--(static)+--(image)+--rich_menu.png
-|          |         +--new_rich_menu.png
 |          +--(richmenu)+--rich_menu
-|          |            +--new_rich_menu
-|          +--(message)+--survey
-|                      +--recommend
 +-------------------------------------------
 ```
 # RichMenu Setting

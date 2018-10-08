@@ -16,8 +16,8 @@
       },
       "action": {
         "type": "postback",
-        "text": "消費紀錄",
-        "data": "orderHistory"
+        "text": "店家地址",
+        "data": "[menu]location"
       }
     },
     {
@@ -29,8 +29,8 @@
       },
       "action": {
         "type": "postback",
-        "text": "我的優惠",
-        "data": "myCoupon"
+        "text": "官方網頁",
+        "data": "[menu]web"
       }
     },
     {
@@ -42,8 +42,8 @@
       },
       "action": {
         "type": "postback",
-        "text": "客服專區",
-        "data": "customerService"
+        "text": "有話要說",
+        "data": "[menu]customerService"
       }
     }
   ]

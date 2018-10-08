@@ -44,74 +44,72 @@ app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
 
 # Models ##########################################
-class customer(db.Model):
-    __tablename__ = 'customer'
-    phone = db.Column(db.String(10), primary_key=True)
-    line = db.Column(db.String(40))
-    customerName = db.Column(db.String(20), nullable=False)
-    def __init__(self, phone, line, test_name):
-        self.phone = phone
-        self.line = line
-        self.test_name = test_name
+class member(db.Model):
+    __tablename__ = 'member'
+    phone_number = db.Column(db.String(10), primary_key=True)
+    member_name = db.Column(db.String(20), nullable=False)
+    line_account = db.Column(db.String(255), unique=True)
+    birthdate = db.Column(db.DateTime)
+    e_mail = db.Column(db.String(50), unique=True)
+    credit_card = db.Column(db.String(50))
+    photo = db.Column(db.String(255))
+    member_password = db.Column(db.String(255))
+    has_confirmed = db.Column(db.Boolean)
+    c_time = db.Column(db.DateTime)
+    has_photo = db.Column(db.Boolean)
+    gender = db.Column(db.Integer)
+    def __init__(self, phone_number, member_name):
+        self.phone_number = phone_number
+        self.member_name = member_name
     def __repr__(self):
-        return '%s,%s' % (self.line, self.test_name)
+        return '%s,%s' % (self.line_account, self.member_name)
 
-class inOutRecord(db.Model):
-    __tablename__ = 'inOutRecord'
+class inorout(db.Model):
+    __tablename__ = 'inorout'
     come_time = db.Column(db.DateTime, primary_key=True)
-    phone = db.Column(db.String(10),db.ForeignKey('customer.phone'), nullable=False)
-    in_out = db.Column(db.Numeric(1))
-    def __init__(self, come_time, phone, in_out):
+    left_time = db.Column(db.DateTime)
+    phone_number = db.Column(db.String(10),db.ForeignKey('member.phone'))
+    inorout = db.Column(db.Integer)
+    def __init__(self, come_time, phone_number, inorout):
         self.come_time = come_time
-        self.phone = phone
-        self.in_out = in_out
+        self.phone_number = phone_number
+        self.inorout = inorout
     def __repr__(self):
-        return '%s,%s' % (self.phone, self.in_out)
-
-class survey (db.Model):
-    __tablename__ = 'survey'
-    survey_no = db.Column(db.Integer, primary_key=True, nullable=False)
-    come_time = db.Column(db.DateTime, db.ForeignKey('inOutRecord.come_time'))
-    satisfaction = db.Column(db.Numeric(1))
-    needCall = db.Column(db.Numeric(1))
-    def __init__(self, come_time, satisfaction=None, needCall=None):
-        self.come_time = come_time
-        self.satisfaction = satisfaction
-        self.needCall = needCall
-    def __repr__(self):
-        return '%s,%s,%s' % (self.come_time, self.satisfaction, self.needCall)
+        return '%s,%s' % (self.phone_number, self.inorout)
 
 class product (db.Model):
     __tablename__ = 'product'
-    product_id = db.Column(db.Integer, primary_key=True, nullable=False)
+    product_id = db.Column(db.Integer, primary_key=True)
     product_name = db.Column(db.String(50))
-    recommend_prod_id = db.Column(db.Integer)
-    product_pic_url = db.Column(db.String(255))
-    product_url = db.Column(db.String(255))
     price = db.Column(db.Integer)
-    def __init__(self, product_name, recommend_prod_id, product_pic_url, product_url, price):
+    category_no = db.Column(db.Integer)
+    stock = db.Column(db.Integer)
+    product_url = db.Column(db.String(255))
+    picture_url = db.Column(db.String(255))
+    re_product_id = db.Column(db.Integer)
+    def __init__(self, product_name, re_product_id, picture_url, product_url, price):
         self.product_name = product_name
-        self.recommend_prod_id = recommend_prod_id
-        self.product_pic_url = product_pic_url
+        self.re_product_id = re_product_id
+        self.picture_url = picture_url
         self.product_url = product_url
         self.price = price
     def __repr__(self):
-        return '%s,%s,%s,%s,%s' % (self.product_name, self.recommend_prod_id, self.product_pic_url, self.product_url, self.price)
+        return '%s,%s,%s,%s,%s' % (self.product_name, self.re_product_id, self.picture_url, self.product_url, self.price)
 
-class orderList (db.Model):
-    __tablename__ = 'orderList'
+class purchase (db.Model):
+    __tablename__ = 'purchase'
     purchase_no = db.Column(db.Integer, primary_key=True, nullable=False)
-    come_time = db.Column(db.DateTime, db.ForeignKey('inOutRecord.come_time'))
+    come_time = db.Column(db.DateTime, db.ForeignKey('inorout.come_time'))
     product_id = db.Column(db.Integer, db.ForeignKey('product.product_id'))
     quantity = db.Column(db.Integer)
+    satisfaction = db.Column(db.Integer)
+    neededcall = db.Column(db.Integer)
     def __init__(self, come_time, product_id, quantity):
         self.come_time = come_time
         self.product_id = product_id
         self.quantity = quantity
     def __repr__(self):
         return '%s,%s,%s' % (self.come_time, self.product_id, self.quantity)
-
-
 
 # APP ###########################################
 @app.route("/", methods=['POST'])
@@ -124,7 +122,6 @@ def callback():
     # handle webhook body
     try:
         handler.handle(body, signature)
-
     except InvalidSignatureError:
         abort(400)
     return 'OK'
@@ -134,9 +131,9 @@ def handle_follow_event(event):
     try:
         # 會員綁定賴帳戶檢查
         user_id = event.source.user_id
-        judge_id = customer.query.filter(customer.line == user_id)
+        judge_id = member.query.filter(member.line_account == user_id)
         # 如果對不到user_id的資訊，就代表是新會員（進行資料庫寫入）
-        if judge_id.one_or_none() == None:
+        if judge_id.one_or_none() is None:
             line_bot_api.reply_message(event.reply_token,
                                        TextSendMessage(text="歡迎加入吃冰大家族！，請輸入註冊phone number以進行綁定"))
         # 如果對的到user_id的資訊，就代表是被unfollow又再回來
@@ -156,9 +153,9 @@ def handle_text_message(event):
     if re.match('(09\d{8})', event.message.text):
         user_id = event.source.user_id
         sign_data = event.message.text
-        connection = customer.query.filter(customer.phone == sign_data)
-        if connection.one_or_none() != None:
-            customer.query.filter(customer.phone == sign_data).update({'line': user_id})
+        connection = member.query.filter(member.phone_number == sign_data)
+        if connection.one_or_none() is not None:
+            member.query.filter(member.phone_number == sign_data).update({'line_account': user_id})
             db.session.commit()
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Connect Successfully."))
         else:
@@ -180,10 +177,10 @@ def handle_post_message(event):
     elif event.postback.data.find('[surveyTemplate]') == 0:
         satisfaction = re.match('\[surveyTemplate\](\d),(\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)', event.postback.data).group(1)
         come_time = re.match('\[surveyTemplate\](\d),(\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)', event.postback.data).group(2)
-        survey.query.filter(survey.come_time == come_time).update({'satisfaction': satisfaction})
+        purchase.query.filter(purchase.come_time == come_time).update({'satisfaction': satisfaction})
         db.session.commit()
         if int(satisfaction) < 3:
-            needCall_templateMessage = TemplateSendMessage(
+            neededcall_templateMessage = TemplateSendMessage(
                 alt_text='Confirm template',
                 template=ConfirmTemplate(
                     text='很抱歉造成您不好的購物體驗，請問需要客服人員的協助嗎???',
@@ -191,25 +188,25 @@ def handle_post_message(event):
                         PostbackAction(
                             label='是',
                             text='是',
-                            data=f'[needCall]1,{come_time}'
+                            data=f'[neededcall]1,{come_time}'
                         ),
                         PostbackAction(
                             label='不用了',
                             text='不用了',
-                            data=f'[needCall]0,{come_time}'
+                            data=f'[neededcall]0,{come_time}'
                         ),
                     ]
                 )
             )
-            line_bot_api.reply_message(event.reply_token, needCall_templateMessage)
+            line_bot_api.reply_message(event.reply_token, neededcall_templateMessage)
         else:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="It's our pleasure."))
-    elif event.postback.data.find('[needCall]') == 0:
-        needCall = re.match('\[needCall\](\d),(\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)', event.postback.data).group(1)
-        come_time = re.match('\[needCall\](\d),(\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)', event.postback.data).group(2)
-        survey.query.filter(survey.come_time == come_time).update({'needCall': needCall})
+    elif event.postback.data.find('[neededcall]') == 0:
+        neededcall = re.match('\[neededcall\](\d),(\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)', event.postback.data).group(1)
+        come_time = re.match('\[neededcall\](\d),(\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)', event.postback.data).group(2)
+        purchase.query.filter(purchase.come_time == come_time).update({'neededcall': neededcall})
         db.session.commit()
-        if int(needCall) == 1:
+        if int(neededcall) == 1:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="請稍待，我們將通知客服人員盡快與您聯繫"))
         else:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="好的，如果有任何意見，歡迎寫信到customer_service@eatice.com.tw"))
@@ -225,20 +222,20 @@ if pid == 0:
     RECOMMEND_FINISHED = 2
     while True:
         db.session.commit()
-        UNRECOMMENDED_STATUS = inOutRecord.query.filter(inOutRecord.in_out != 2)
+        UNRECOMMENDED_STATUS = inorout.query.filter(inorout.inorout != 2)
         if UNRECOMMENDED_STATUS.first():
             come_time = UNRECOMMENDED_STATUS.first().come_time
-            phone = inOutRecord.query.filter(inOutRecord.come_time == come_time).one().phone
-            status = inOutRecord.query.filter(inOutRecord.come_time == come_time).one().in_out
-            line = customer.query.filter(customer.phone == phone).one().line
+            phone_number = inorout.query.filter(inorout.come_time == come_time).one().phone_number
+            status = inorout.query.filter(inorout.come_time == come_time).one().inorout
+            line_account = member.query.filter(member.phone_number == phone_number).one().line_account
             # make sure we have buyer's line_id
-            if line != None:
+            if line_account is not None:
                 # in situation
                 if status == IN_STATUS:
                     # push bestSell_templateMessage
                     bestSell_sql = '''
                          SELECT product_id, SUM(quantity) as sum
-                         FROM orderList
+                         FROM purchase
                          WHERE come_time > DATE_SUB(NOW(), INTERVAL 30 DAY)
                          GROUP BY product_id
                          ORDER BY sum DESC LIMIT 5'''
@@ -248,7 +245,7 @@ if pid == 0:
                         product_id = i['product_id']
                         uri = product.query.filter(product.product_id == product_id).one().product_url
                         thumbnail_image_url = product.query.filter(
-                            product.product_id == product_id).one().product_pic_url
+                            product.product_id == product_id).one().picture_url
                         _text = product.query.filter(product.product_id == product_id).one().product_name
                         carouselColumn = CarouselColumn(
                             thumbnail_image_url=thumbnail_image_url,
@@ -256,7 +253,7 @@ if pid == 0:
                             actions=[
                                 URIAction(
                                     label='More Information',
-                                    uri=uri
+                                    uri=f'https://www.Amazon.com/{uri}'
                                 )
                             ]
                         )
@@ -265,9 +262,9 @@ if pid == 0:
                         alt_text='Carousel template',
                         template=CarouselTemplate(columns=columns)
                     )
-                    line_bot_api.push_message(line, TextSendMessage(text="Welcome! Please refer are our best-selling items below!"))
-                    line_bot_api.push_message(line, bestSell_templateMessage)
-                    inOutRecord.query.filter(inOutRecord.come_time == come_time).update({"in_out": RECOMMEND_FINISHED})
+                    line_bot_api.push_message(line_account, TextSendMessage(text="Welcome! Please refer are our best-selling items below!"))
+                    line_bot_api.push_message(line_account, bestSell_templateMessage)
+                    inorout.query.filter(inorout.come_time == come_time).update({"inorout": RECOMMEND_FINISHED})
                     db.session.commit()
                 # out situation
                 elif status == OUT_STATUS:
@@ -277,7 +274,7 @@ if pid == 0:
                     receipt_price = "Price\n"
                     receipt_amount = "Amount\n"
                     total_price = 0
-                    full_order = orderList.query.filter(orderList.come_time == come_time).group_by(orderList.product_id).all()
+                    full_order = purchase.query.filter(purchase.come_time == come_time).group_by(purchase.product_id).all()
                     for i in full_order:
                         product_name = product.query.filter(product.product_id == i.product_id).one().product_name
                         product_price = product.query.filter(product.product_id == i.product_id).one().price
@@ -288,86 +285,86 @@ if pid == 0:
                         receipt_price += f"{product_price}\n"
                         receipt_amount += f"{product_unit*product_price}\n"
                     flexSendContents = BubbleContainer(
-                        header = BoxComponent(
-                            layout = "vertical",
-                            contents = [
+                        header=BoxComponent(
+                            layout="vertical",
+                            contents=[
                                 TextComponent(
-                                    text = "Receipt",
-                                    weight = "bold"
+                                    text="Receipt",
+                                    weight="bold"
                                 ),
                             ]
                         ),
                         body = BoxComponent(
-                            layout = "horizontal",
-                            spacing = "lg",
-                            contents = [
+                            layout="horizontal",
+                            spacing="lg",
+                            contents=[
                                 TextComponent(
-                                    text = receipt_item,
-                                    wrap = True, 
-                                    align = "start",
-                                    flex = 0,
-                                    size = "xxs",
-                                    maxLines = 1
+                                    text=receipt_item,
+                                    wrap=True,
+                                    align="start",
+                                    flex=0,
+                                    size="xxs",
+                                    maxLines=1
                                 ),
                                 TextComponent(
-                                    text = receipt_unit,
-                                    wrap = True, 
-                                    align = "end",
-                                    flex = 4,
-                                    size = "xxs"
+                                    text=receipt_unit,
+                                    wrap=True,
+                                    align="end",
+                                    flex=4,
+                                    size="xxs"
                                 ),
                                 TextComponent(
-                                    text = receipt_price,
-                                    wrap = True, 
-                                    align = "start",
-                                    flex = 7,
-                                    size = "xxs"
+                                    text=receipt_price,
+                                    wrap=True,
+                                    align="start",
+                                    flex=7,
+                                    size="xxs"
                                 ),
                                 TextComponent(
-                                    text = receipt_amount,
-                                    wrap = True, 
-                                    align = "start",
-                                    flex = 8,
-                                    size = "xxs"
+                                    text=receipt_amount,
+                                    wrap=True,
+                                    align="start",
+                                    flex=8,
+                                    size="xxs"
                                 )
 
                             ]
                         ),
-                        footer = BoxComponent(
-                            layout = "horizontal",
-                            contents = [
+                        footer=BoxComponent(
+                            layout="horizontal",
+                            contents=[
                                 TextComponent(
-                                    text = "Total",
-                                    wrap = True,
-                                    align = "start",
-                                    weight = "bold"
+                                    text="Total",
+                                    wrap=True,
+                                    align="start",
+                                    weight="bold"
                                 ),
                                 TextComponent(
-                                    text = f"{total_price}",
-                                    wrap = True,
-                                    align = "end",
-                                    weight = "bold"
+                                    text=f"{total_price}",
+                                    wrap=True,
+                                    align="end",
+                                    weight="bold"
                                 )
                             ]
                         )
                     )
-                    recipteFlexMessage = FlexSendMessage(alt_text = "Flex message", contents = flexSendContents)
-                    line_bot_api.push_message(line, recipteFlexMessage)
+                    recipteFlexMessage = FlexSendMessage(alt_text="Flex message", contents=flexSendContents)
+                    line_bot_api.push_message(line_account, recipteFlexMessage)
                     # push recommend_templateMessage
-                    limit_order = orderList.query.filter(orderList.come_time == come_time).group_by(orderList.product_id).limit(10).all()
+                    limit_order = purchase.query.filter(purchase.come_time == come_time).group_by(purchase.product_id).limit(10).all()
                     re_columns = []  # for CarouselTemplate
                     for i in limit_order:
-                        recommend_prod_id = product.query.filter(product.product_id == i.product_id).one().recommend_prod_id
-                        uri = product.query.filter(product.product_id == recommend_prod_id).one().product_url
-                        thumbnail_image_url = product.query.filter(product.product_id == recommend_prod_id).one().product_pic_url
-                        _text = product.query.filter(product.product_id == recommend_prod_id).one().product_name
+                        re_product_id = product.query.filter(product.product_id == i.product_id).one().re_product_id
+                        uri = product.query.filter(product.product_id == re_product_id).one().product_url
+                        thumbnail_image_url = product.query.filter(product.product_id == re_product_id).one().picture_url
+                        _text = product.query.filter(product.product_id == re_product_id).one().product_name
                         carouselColumn = CarouselColumn(
                             thumbnail_image_url=thumbnail_image_url,
                             text=_text,
                             actions=[
                                 URIAction(
                                     label='More Information',
-                                    uri=uri
+                                    uri=f'https://www.Amazon.com/{uri}'
                                 )
                             ]
                         )
@@ -376,11 +373,8 @@ if pid == 0:
                         alt_text='Carousel template',
                         template=CarouselTemplate(columns=re_columns)
                     )
-                    line_bot_api.push_message(line,TextSendMessage(text="Hey, you may be interesting in these."))
-                    line_bot_api.push_message(line, recommend_templateMessage)
-                    # create surveyTemplate data
-                    addSurvey = survey(come_time, needCall=0)
-                    db.session.add(addSurvey)
+                    line_bot_api.push_message(line_account, TextSendMessage(text="Hey, you may be interesting in these."))
+                    line_bot_api.push_message(line_account, recommend_templateMessage)
                     # push surveyTemplate
                     survey_templateMessage = TemplateSendMessage(
                         alt_text='Buttons template',
@@ -411,9 +405,9 @@ if pid == 0:
                             ]
                         )
                     )
-                    line_bot_api.push_message(line, survey_templateMessage)
+                    line_bot_api.push_message(line_account, survey_templateMessage)
                     # update status
-                    inOutRecord.query.filter(inOutRecord.come_time == come_time).update({"in_out": RECOMMEND_FINISHED})
+                    inorout.query.filter(inorout.come_time == come_time).update({"inorout": RECOMMEND_FINISHED})
                     db.session.commit()
         else:
             time.sleep(30)

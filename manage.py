@@ -11,7 +11,7 @@ manager.add_command('runserver', Server())
 @manager.shell
 def make_shell_context():
     return dict(
-        app=app, db=db, customer=customer, inOutRecord=inOutRecord, survey=survey, product=product, orderList=orderList)
+        app=app, db=db, member=member, inorout=inorout, product=product, purchase=purchase)
 
 if __name__ == '__main__':
     manager.run()
