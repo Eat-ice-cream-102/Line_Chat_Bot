@@ -253,7 +253,7 @@ if pid == 0:
                             actions=[
                                 URIAction(
                                     label='More Information',
-                                    uri=uri
+                                    uri=f'https://www.Amazon.com/{uri}'
                                 )
                             ]
                         )
@@ -364,7 +364,7 @@ if pid == 0:
                             actions=[
                                 URIAction(
                                     label='More Information',
-                                    uri=uri
+                                    uri=f'https://www.Amazon.com/{uri}'
                                 )
                             ]
                         )
