@@ -1,5 +1,5 @@
 from flask_script import Manager, Server
-from app import app, db, customer, inOutRecord, survey, product, orderList
+from app import app, db, member, inorout, product, purchase
 
 
 # 設置你的 app

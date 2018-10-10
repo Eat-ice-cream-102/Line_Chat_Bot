@@ -17,8 +17,8 @@ $ sudo systemctl enable docker
 ### Re-login to use docker commend directly 
 ```
 $ docker build -t="eatIceCream/linechatbot"
-$ docker run --name linechatbot --link some-mysql -v ~/LineChatBot:~/LineChatBot eatIceCream/linechatbot -p 5000:5000 -link
-$ docker run --name line-ngrok -d -p 4040 --link linechatbot wernight/ngrok ngrok http linechatbot:5000
+$ docker run --name line-chat-bot-jupyter --link some-mysql -p 8888:8888 -p 5000:5000 -v $(pwd):/home/jovyan/work -d eatIceCream/line_bot_python start-notebook.sh --NotebookApp.token=''
+$ docker run --name line-ngrok -d -p 4040 --link line-chat-bot-jupyter wernight/ngrok ngrok http line-chat-bot-jupyter:5000
 $ curl $(docker port line-ngrok 4040)/api/tunnels > tunnels.json
 ```
 ## Install git
@@ -65,7 +65,7 @@ uploadRichMenuId=json.loads(lineCreateMenuResponse.text).get("richMenuId")
 ```
 uploadMenuEndpoint='https://api.line.me/v2/bot/richmenu/%s/content' % RICH_MENU_ID # 設定 request address
 uploadMenuRequestHeader={'Content-Type':'image/png','Content-Length': '348', 'Authorization':'Bearer %s' % CHANNEL_ACCESS_TOKEN} # 設定 headers
-uploadImageFile=open("./static/image/new_rich_menu.png",'rb') # 設定上傳圖片
+uploadImageFile=open("./static/image/rich_menu.png",'rb') # 設定上傳圖片
 lineUploadMenuResponse=requests.post(uploadMenuEndpoint,headers=uploadMenuRequestHeader,data=uploadImageFile) # response an array of rich menu response objects
 ```
 ## 4. Link the rich image to individual user

@@ -9,6 +9,7 @@ from linebot.models import *
 ## MySQL
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
+import pymysql
 ## else
 import json, time, re, requests, os
 
@@ -26,6 +27,7 @@ RICH_MENU_ID = line_key.get("Rich_menu_ID")
 CHANNEL_ID = line_key.get("Channel_ID")
 SERVER_URL = line_key.get("Server_URL")
 ## MySQL
+pymysql.install_as_MySQLdb()
 mysql_key = json.load(open("./requirements/mysql_key", 'r'))
 HOST = mysql_key.get('Host')
 USER = mysql_key.get("User")
@@ -211,7 +213,7 @@ def handle_post_message(event):
         else:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="好的，如果有任何意見，歡迎寫信到customer_service@eatice.com.tw"))
 
-
+'''
 # RECOMMEND-SYS SUB-PROGRESSION##################
 
 pid = os.fork()
@@ -233,12 +235,12 @@ if pid == 0:
                 # in situation
                 if status == IN_STATUS:
                     # push bestSell_templateMessage
-                    bestSell_sql = '''
+                    bestSell_sql = ''''''
                          SELECT product_id, SUM(quantity) as sum
                          FROM purchase
                          WHERE come_time > DATE_SUB(NOW(), INTERVAL 30 DAY)
                          GROUP BY product_id
-                         ORDER BY sum DESC LIMIT 5'''
+                         ORDER BY sum DESC LIMIT 5''''''
                     result = db.engine.execute(text(bestSell_sql))
                     columns = []  # for CarouselTemplate
                     for i in result:
@@ -274,7 +276,7 @@ if pid == 0:
                     receipt_price = "Price\n"
                     receipt_amount = "Amount\n"
                     total_price = 0
-                    full_order = purchase.query.filter(purchase.come_time == come_time).group_by(purchase.product_id).all()
+                    full_order = purchase.query.filter(purchase.come_time == come_time).all()
                     for i in full_order:
                         product_name = product.query.filter(product.product_id == i.product_id).one().product_name
                         product_price = product.query.filter(product.product_id == i.product_id).one().price
@@ -351,7 +353,7 @@ if pid == 0:
                     recipteFlexMessage = FlexSendMessage(alt_text="Flex message", contents=flexSendContents)
                     line_bot_api.push_message(line_account, recipteFlexMessage)
                     # push recommend_templateMessage
-                    limit_order = purchase.query.filter(purchase.come_time == come_time).group_by(purchase.product_id).limit(10).all()
+                    limit_order = purchase.query.filter(purchase.come_time == come_time).limit(10).all()
                     re_columns = []  # for CarouselTemplate
                     for i in limit_order:
                         re_product_id = product.query.filter(product.product_id == i.product_id).one().re_product_id
@@ -411,4 +413,4 @@ if pid == 0:
                     db.session.commit()
         else:
             time.sleep(30)
-
+'''
