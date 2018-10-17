@@ -16,8 +16,8 @@ $ sudo systemctl enable docker
 ```
 ### Re-login to use docker commend directly 
 ```
-$ docker build -t="eatIceCream/linechatbot"
-$ docker run --name line-chat-bot-jupyter --link some-mysql -p 8888:8888 -p 5000:5000 -v $(pwd):/home/jovyan/work -d eatIceCream/line_bot_python start-notebook.sh --NotebookApp.token=''
+$ docker build -t="eaticecream/linechatbot" .
+$ docker run --name line-chat-bot-jupyter --link some-mysql -p 8888:8888 -p 5000:5000 -v $(pwd):/home/jovyan/work -d eaticecream/linechatbot start-notebook.sh --NotebookApp.token=''
 $ docker run --name line-ngrok -d -p 4040 --link line-chat-bot-jupyter wernight/ngrok ngrok http line-chat-bot-jupyter:5000
 $ curl $(docker port line-ngrok 4040)/api/tunnels > tunnels.json
 ```
@@ -80,3 +80,8 @@ getRichMenuImageEndpoint = 'https://api.line.me/v2/bot/richmenu/%s/content' % RI
 getRichMenuImageHeader = {'Authorization':'Bearer %s' % CHANNEL_ACCESS_TOKEN}
 getRichMenuImageResponse=requests.get(getRichMenuImageEndpoint,headers=getRichMenuImageHeader)
 ```
+
+## To Be Conttinued ########
+1. Actually I left running python code and ngrok on the docker aside, no have enough time to try if it is workable, only learned the method from my teacher, LBH, first. if you are interested in knowing how to make it, maybe you can refer our forked reposity.
+2. the muti-process method seems not work very well when line-chat-bot pushes messages to followers, it would cause duplicate-sending issue. Have not tried yet, but setting a trigger/listener on the DB/ORM may be the solution to it.
+3. The flask structure and python code still has much to be refined to be more readable and formal.
