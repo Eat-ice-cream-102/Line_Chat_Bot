@@ -82,6 +82,6 @@ getRichMenuImageResponse=requests.get(getRichMenuImageEndpoint,headers=getRichMe
 ```
 
 ## To Be Conttinued ########
-1. Actually I left running python code and ngrok on the docker aside, no have enough time to try if it is workable, only learned the method from my teacher, LBH, first. if you are interested in knowing how to make it, maybe you can refer our forked reposity.
-2. the muti-process method seems not work very well when line-chat-bot pushes messages to followers, it would cause duplicate-sending issue. Have not tried yet, but setting a trigger/listener on the DB/ORM may be the solution to it.
+1. Actually I left running python code and ngrok on the docker aside, no have enough time to try if it is workable, only learned the method from my teacher, LBH, first. if you are interested in knowing how to make it, maybe you can refer our forked repository.
+2. In app.py, the muti-process method seems not work very well when pushing messages to followers, it would cause duplicate-sending issue. Have not tried yet, but setting a trigger/listener on the DB/ORM may be the solution to it.
 3. The flask structure and python code still has much to be refined to be more readable and formal.
